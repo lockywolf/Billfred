@@ -1,0 +1,19 @@
+[Service]
+Type=simple
+TimeoutSec=20
+User=bot
+Group=bot
+Restart=always
+RestartSec=120
+ExecStart=/path/to/Billi_SI.py --config true
+
+Environment="LANG=en_US.UTF-8"
+StandardOutput=journal
+
+[Unit]
+Requires=network.target
+After=network.target
+Description=Jabber bot
+
+[Install]
+WantedBy=multi-user.target
