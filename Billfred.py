@@ -30,6 +30,9 @@ import feedparser
 
 import sleekxmpp
 
+#attaching Eliza. Lockywolf 28.02.2017
+import eliza as elz
+
 # Forcing UTF8
 if sys.version_info < (3, 0):
     from sleekxmpp.util.misc_ops import setdefaultencoding
@@ -92,15 +95,17 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
 
     def write_log(self,query):
+        '''This function is disabled for Billfred-Liza. Lockywolf'''
         #TODO: Сделать раоту базы в тредах иначе приходится на каждый тред открывать и закрывать
         #SQLite objects created in a thread can only be used in that same thread
-        #connect_db = sqlite3.connect('./rulinux_xmpp_chat_logs.db')
-        connect_db = sqlite3.connect(os.path.join(os.path.dirname(__file__), 'rulinux_xmpp_chat_logs.db'))     
+        connect_db = sqlite3.connect('./rulinux_xmpp_chat_logs.db')
+        connect_db = sqlite3.connect(os.path.join(os.path.dirname(__file__), 'rulinux_xmpp_chat_logs.db'))
         cursor_db = connect_db.cursor()
         cursor_db.execute("""INSERT INTO chat_log (id, time, jit, name, message)
                             VALUES (NULL,?,?,?,?)""", query)
         connect_db.commit()
         connect_db.close()
+        pass
 
     def start(self, event):
         self.get_roster()
@@ -133,6 +138,13 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
                 if command == 'ping':
                     self.try_ping(msg['from'], msg['mucnick'])
+                    return
+            to_strip = msg['body']
+            stripped = to_strip[len(tokens[0]):]
+            elz_answer = elz.analyze(to_strip)
+            self.send_message(mto="rulinux@conference.jabber.ru",
+                          mbody="%s: %s " % (msg['mucnick'], elz_answer),
+                          mtype='groupchat')
 
         elif "http" in msg['body']:
             self.try_say_url_info(msg['body'], msg['from'])
